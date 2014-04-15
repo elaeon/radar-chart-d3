@@ -88,6 +88,23 @@ var RadarChart = {
 	      .style("stroke-width", "0.3px")
 	      .attr("transform", "translate(" + (cfg.w/2-levelFactor) + ", " + (cfg.h/2-levelFactor) + ")");
       }
+
+	//Text indicating at what % each level is
+	/*for(var j=0; j<cfg.levels; j++){
+	  var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
+	  g.selectAll(".levels")
+	   .data([1]) //dummy data
+	   .enter()
+	   .append("svg:text")
+	   .attr("x", function(d){return levelFactor*(1-cfg.factor*Math.sin(0));})
+	   .attr("y", function(d){return levelFactor*(1-cfg.factor*Math.cos(0));})
+	   .attr("class", "legend")
+	   .style("font-family", "sans-serif")
+	   .style("font-size", "10px")
+	   .attr("transform", "translate(" + (cfg.w/2-levelFactor + cfg.ToRight) + ", " + (cfg.h/2-levelFactor) + ")")
+	   .attr("fill", "#737373")
+	   .text(Format(((j+1)*cfg.maxValue/cfg.levels)));
+	}*/
 	
       series = 0;
       
@@ -155,28 +172,13 @@ var RadarChart = {
 	      .style("stroke-width", "2px")
 	      .style("stroke", cfg.color(series))
 	      .attr("points",function(d) {
-		  var str="";
-		  for(var pti=0;pti<d.length;pti++){
-		      str=str+d[pti][0]+","+d[pti][1]+" ";
-		  }
-		  return str;
+                  return d.map(function(d) {
+		      return [d[0], d[1]].join(",");
+		  }).join(" ");
 	      })
 	      .style("fill", function(j, i){return cfg.color(series)})
 	      .style("fill-opacity", cfg.opacityArea)
-	      .on('mouseover', function (d){
-		  z = "polygon."+d3.select(this).attr("class");
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", 0.1); 
-		  g.selectAll(z)
-		      .transition(200)
-		      .style("fill-opacity", .7);
-	      })
-	      .on('mouseout', function(){
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", cfg.opacityArea);
-	      });
+	      ;
 	  series++;
       });
       series=0;
@@ -212,13 +214,21 @@ var RadarChart = {
 		      .transition(200)
 		      .style('opacity', 1);
 		  
-					z = "polygon."+d3.select(this).attr("class");
+		  z = "polygon."+d3.select(this).attr("class");
+		  c = "circle."+d3.select(this).attr("class");
+		  g.selectAll("circle")
+		      .transition(200)
+		      .style("fill-opacity", 0.2);
 		  g.selectAll("polygon")
 		      .transition(200)
-		      .style("fill-opacity", 0.1); 
+		      .style("fill-opacity", 0.0)
+		      .style("stroke-opacity", 0.3);
 		  g.selectAll(z)
 		      .transition(200)
-		      .style("fill-opacity", .7);
+		      .style("fill-opacity", 0.7);
+		  g.selectAll(c)
+		      .transition(200)
+		      .style("fill-opacity", 0.9);
 	      })
 	      .on('mouseout', function(){
 		  tooltip
@@ -226,13 +236,18 @@ var RadarChart = {
 		      .style('opacity', 0);
 		  g.selectAll("polygon")
 		      .transition(200)
-		      .style("fill-opacity", cfg.opacityArea);
+		      .style("fill-opacity", cfg.opacityArea)
+		      .style("stroke-opacity", 1);
+		  g.selectAll("circle")
+		      .transition(200)
+		      .style("fill-opacity", 0.9);
 	      })
 	      .append("svg:title")
 	      .text(function(j){return Math.max(j.value, 0)});
 	  
 	  series++;
       });
+      
       //Tooltip
       tooltip = g.append('text')
 	  .style('opacity', 0)
@@ -272,7 +287,24 @@ var RadarChart = {
 	  .attr("y", function(d, i){ return i * 20 + 5;})
 	  .attr("width", 10)
 	  .attr("height", 20)
-	  .style("fill", function(d, i){ return cfg.color(i);});
+	  .style("fill", function(d, i){ return cfg.color(i);})
+          .on('click', function(d, i){
+	      z = "polygon.radar-chart-serie" + i;
+	      c = "circle.radar-chart-serie" + i;
+	      g.selectAll("circle")
+		  .transition(200)
+		  .style("fill-opacity", 0.2);
+	      g.selectAll("polygon")
+		  .transition(200)
+		  .style("fill-opacity", 0.0)
+		  .style("stroke-opacity", 0.3);
+	      g.selectAll(z)
+		  .transition(200)
+		  .style("fill-opacity", 0.7);
+	      g.selectAll(c)
+		  .transition(200)
+		  .style("fill-opacity", 0.9);
+	  });
       
       //Create text next to squares
       legend.selectAll('text')
