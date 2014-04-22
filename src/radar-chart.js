@@ -122,14 +122,14 @@ var RadarChart = {
 	  .attr("x2", function(d, i){return cfg.w/2*(1-cfg.factor*Math.sin(i*cfg.radians/total));})
 	  .attr("y2", function(d, i){return cfg.h/2*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
 	  .attr("class", "line")
-	  .style("stroke", "grey")
-	  .style("stroke-width", "1px");
+	  .style("stroke", "#c9c9c9")
+	  .style("stroke-width", "2px");
       
       axis.append("text")
 	  .attr("class", "legend")
 	  .text(function(d){return d})
 	  .style("font-family", "sans-serif")
-	  .style("font-size", "11px")
+	  .style("font-size", "12px")
 	  .attr("text-anchor", "middle")
 	  .attr("dy", "1.5em")
 	  .attr("transform", function(d, i){return "translate(0, -10)"})
@@ -161,7 +161,32 @@ var RadarChart = {
 	      })
 	      .style("fill", function(j, i){return cfg.color(series)})
 	      .style("fill-opacity", cfg.opacityArea)
-	      ;
+	      /*.on('mouseover', function (d){
+		  z = "polygon."+d3.select(this).attr("class");
+		  c = "circle."+d3.select(this).attr("class");;
+		  g.selectAll("circle")
+		      .transition(200)
+		      .style("fill-opacity", 0.2);
+		  g.selectAll("polygon")
+		      .transition(200)
+		      .style("fill-opacity", 0.0)
+		      .style("stroke-opacity", 0.3);
+		  g.selectAll(z)
+		      .transition(200)
+		      .style("fill-opacity", 0.7);
+		  g.selectAll(c)
+		      .transition(200)
+		      .style("fill-opacity", 0.9);
+	      })
+	      .on('mouseout', function(){
+		  g.selectAll("polygon")
+		      .transition(200)
+		      .style("fill-opacity", cfg.opacityArea)
+		      .style("stroke-opacity", 1);
+		  g.selectAll("circle")
+		      .transition(200)
+		      .style("fill-opacity", 0.9);
+	      });*/
 	  series++;
       });
       series=0;
