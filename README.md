@@ -1,9 +1,9 @@
 radar-chart-d3
 ==============
 
-Simple radar chart in D3.js
+Simple radar chart in D3.js, with multiples ranges
 
 Example
 =======
 
-http://graves.cl/radar-chart-d3
+![alt tag](example/radar_sample.png)
