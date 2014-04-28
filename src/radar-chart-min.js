@@ -1,1 +1,303 @@
-var RadarChart={draw:function(e,t,n){var r={radius:5,w:600,h:600,factor:1,factorLegend:.85,levels:3,maxValue:0,radians:2*Math.PI,opacityArea:.5,color:d3.scale.category10()};if("undefined"!==typeof n){for(var i in n){if("undefined"!==typeof n[i]){r[i]=n[i]}}}r.maxValue=Math.max(r.maxValue,d3.max(t,function(e){return d3.max(e.map(function(e){return e.value}))}));var s=t[0].map(function(e,t){return e.axis});var o=s.length;var u=r.factor*Math.min(r.w/2,r.h/2);d3.select(e).select("svg").remove();var a=d3.select(e).append("svg").attr("width",r.w).attr("height",r.h).append("g");var f;for(var l=0;l<r.levels;l++){var c=r.factor*u*((l+1)/r.levels);a.selectAll(".levels").data(s).enter().append("svg:line").attr("x1",function(e,t){return c*(1-r.factor*Math.sin(t*r.radians/o))}).attr("y1",function(e,t){return c*(1-r.factor*Math.cos(t*r.radians/o))}).attr("x2",function(e,t){return c*(1-r.factor*Math.sin((t+1)*r.radians/o))}).attr("y2",function(e,t){return c*(1-r.factor*Math.cos((t+1)*r.radians/o))}).attr("class","line").style("stroke","grey").style("stroke-width","0.5px").attr("transform","translate("+(r.w/2-c)+", "+(r.h/2-c)+")");}series=0;var h=a.selectAll(".axis").data(s).enter().append("g").attr("class","axis");h.append("line").attr("x1",r.w/2).attr("y1",r.h/2).attr("x2",function(e,t){return r.w/2*(1-r.factor*Math.sin(t*r.radians/o))}).attr("y2",function(e,t){return r.h/2*(1-r.factor*Math.cos(t*r.radians/o))}).attr("class","line").style("stroke","grey").style("stroke-width","1px");h.append("text").attr("class","legend").text(function(e){return e}).style("font-family","sans-serif").style("font-size","10px").attr("transform",function(e,t){return"translate(0, -10)"}).attr("x",function(e,t){return r.w/2*(1-r.factorLegend*Math.sin(t*r.radians/o))-20*Math.sin(t*r.radians/o)}).attr("y",function(e,t){return r.h/2*(1-Math.cos(t*r.radians/o))+20*Math.cos(t*r.radians/o)});t.forEach(function(e,t){dataValues=[];a.selectAll(".nodes").data(e,function(e,t){dataValues.push([r.w/2*(1-parseFloat(Math.max(e.value,0))/r.maxValue*r.factor*Math.sin(t*r.radians/o)),r.h/2*(1-parseFloat(Math.max(e.value,0))/r.maxValue*r.factor*Math.cos(t*r.radians/o))])});dataValues.push(dataValues[0]);a.selectAll(".area").data([dataValues]).enter().append("polygon").attr("class","radar-chart-serie"+series).style("stroke-width","2px").style("stroke",r.color(series)).attr("points",function(e){var t="";for(var n=0;n<e.length;n++){t=t+e[n][0]+","+e[n][1]+" "}return t}).style("fill",function(e,t){return r.color(series)}).style("fill-opacity",r.opacityArea).on("mouseover",function(e){z="polygon."+d3.select(this).attr("class");a.selectAll("polygon").transition(200).style("fill-opacity",.1);a.selectAll(z).transition(200).style("fill-opacity",.7)}).on("mouseout",function(){a.selectAll("polygon").transition(200).style("fill-opacity",r.opacityArea)});series++});series=0;t.forEach(function(e,t){a.selectAll(".nodes").data(e).enter().append("svg:circle").attr("class","radar-chart-serie"+series).attr("r",r.radius).attr("alt",function(e){return Math.max(e.value,0)}).attr("cx",function(e,t){dataValues.push([r.w/2*(1-parseFloat(Math.max(e.value,0))/r.maxValue*r.factor*Math.sin(t*r.radians/o)),r.h/2*(1-parseFloat(Math.max(e.value,0))/r.maxValue*r.factor*Math.cos(t*r.radians/o))]);return r.w/2*(1-Math.max(e.value,0)/r.maxValue*r.factor*Math.sin(t*r.radians/o))}).attr("cy",function(e,t){return r.h/2*(1-Math.max(e.value,0)/r.maxValue*r.factor*Math.cos(t*r.radians/o))}).attr("data-id",function(e){return e.axis}).style("fill",r.color(series)).style("fill-opacity",.9).on("mouseover",function(e){newX=parseFloat(d3.select(this).attr("cx"))-10;newY=parseFloat(d3.select(this).attr("cy"))-5;f.attr("x",newX).attr("y",newY).text(e.value).transition(200).style("opacity",1);z="polygon."+d3.select(this).attr("class");a.selectAll("polygon").transition(200).style("fill-opacity",.1);a.selectAll(z).transition(200).style("fill-opacity",.7)}).on("mouseout",function(){f.transition(200).style("opacity",0);a.selectAll("polygon").transition(200).style("fill-opacity",r.opacityArea)}).append("svg:title").text(function(e){return Math.max(e.value,0)});series++});f=a.append("text").style("opacity",0).style("font-family","sans-serif").style("font-size",13)}}
+var RadarChart = {
+  draw: function(id, d, options){
+  var cfg = {
+      radius: 5,
+      w: 600,
+      h: 600,
+      factor: 1,
+      factorLegend: .85,
+      levels: 3,
+      maxValue: 0,
+      radians: 2 * Math.PI,
+      opacityArea: 0.5,
+      ToRight: 5,
+      TranslateX: 80,
+      TranslateY: 30,
+      ExtraWidthX: 100,
+      ExtraWidthY: 100,
+      color: d3.scale.category10(),
+      legend: [],
+      defaultValue: null,
+      zoomOut: 1,
+      radarClass: "radar-chart-serie-"
+  };
+      var polygonClass = "polygon." + cfg.radarClass;
+      var circleClass = "circle." + cfg.radarClass;
+
+      if('undefined' !== typeof options){
+	  for(var i in options){
+	      if('undefined' !== typeof options[i]){
+		  cfg[i] = options[i];
+	      }
+	  }
+      }
+
+      if(cfg.legend.length == 0) {
+          for(var i=0; i<d.length;i++) {
+              cfg.legend.push("t" + i);
+          }
+      }
+
+      cfg.maxValueD = {};
+      for(var i=0; i<d[0].length;i++) {
+	  cfg.maxValueD[d[0][i].axis] = 0;
+      }
+      
+      if('object' == typeof cfg.maxValue) {
+	  for (var key in cfg.maxValueD) {
+              if (cfg.maxValueD.hasOwnProperty(key)) {
+		  cfg.maxValueD[key] = d3.max(d, function(i){return d3.max(i.map(function(o){return key == o.axis ? o.value : 1;}))}) * cfg.zoomOut;
+	      }
+	  }
+      }
+      else {
+	  cfg.maxValue = Math.max(cfg.maxValue, d3.max(d, function(i){return d3.max(i.map(function(o){return o.value;}))}));
+	  for (var key in cfg.maxValueD) {
+              if (cfg.maxValueD.hasOwnProperty(key)) {
+		  cfg.maxValueD[key] = cfg.maxValue * cfg.zoomOut;
+	      }
+	  }
+      }
+      
+      var allAxis = (d[0].map(function(i, j){return i.axis}));
+      var total = allAxis.length;
+      var radius = cfg.factor*Math.min(cfg.w/2, cfg.h/2);
+      var Format = d3.format('');
+      d3.select(id).select("svg").remove();
+      
+      var g = d3.select(id)
+	  .append("svg")
+	  .attr("width", cfg.w+cfg.ExtraWidthX)
+	  .attr("height", cfg.h+cfg.ExtraWidthY)
+	  .append("g")
+	  .attr("transform", 
+		"translate(" + cfg.TranslateX + "," + cfg.TranslateY + ")");
+      
+      //Circular segments
+      for(var j=0; j<cfg.levels-1; j++){
+	  var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
+	  g.selectAll(".levels")
+	      .data(allAxis)
+	      .enter()
+	      .append("svg:line")
+	      .attr("x1", function(d, i){return levelFactor*(1-cfg.factor*Math.sin(i*cfg.radians/total));})
+	      .attr("y1", function(d, i){return levelFactor*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
+	      .attr("x2", function(d, i){return levelFactor*(1-cfg.factor*Math.sin((i+1)*cfg.radians/total));})
+	      .attr("y2", function(d, i){return levelFactor*(1-cfg.factor*Math.cos((i+1)*cfg.radians/total));})
+	      .attr("class", "line")
+	      .style("stroke", "grey")
+	      .style("stroke-opacity", "0.5")
+	      .style("stroke-width", "0.3px")
+	      .attr("transform", "translate(" + (cfg.w/2-levelFactor) + ", " + (cfg.h/2-levelFactor) + ")");
+      }
+	
+      series = 0;
+      
+      var axis = g.selectAll(".axis")
+	  .data(allAxis)
+	  .enter()
+	  .append("g")
+	  .attr("class", "axis");
+      
+      for(var j=0; j<cfg.levels; j++){
+          var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
+	  g.selectAll(".levels")
+	      .data(allAxis)
+	      .enter()
+	      .append("text")
+	      .attr("class", "legend")
+	      .text(function(d) {return Format(((j+1)*cfg.maxValueD[d]/cfg.levels))})
+	      .style("font-family", "sans-serif")
+	      .style("font-size", "11px")
+	      .attr("text-anchor", "middle")
+	      .attr("dy", "1.5em")
+	      .attr("fill", "#737373")
+	      .attr("transform", "translate(" + (cfg.w/2-levelFactor+10) + ", " + (cfg.h/2-levelFactor-15) + ")")
+	      .attr("x", function(d, i) {return levelFactor*(1-cfg.factor*Math.sin(i*cfg.radians/total))})
+	      .attr("y", function(d, i) {return levelFactor*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
+      }  
+      
+      
+      axis.append("line")
+	  .attr("x1", cfg.w/2)
+	  .attr("y1", cfg.h/2)
+	  .attr("x2", function(d, i){return cfg.w/2*(1-cfg.factor*Math.sin(i*cfg.radians/total));})
+	  .attr("y2", function(d, i){return cfg.h/2*(1-cfg.factor*Math.cos(i*cfg.radians/total));})
+	  .attr("class", "line")
+	  .style("stroke", "#c9c9c9")
+	  .style("stroke-width", "2px");
+      
+      axis.append("text")
+	  .attr("class", "legend")
+	  .text(function(d){return d})
+	  .style("font-family", "sans-serif")
+	  .style("font-size", "12px")
+	  .attr("text-anchor", "middle")
+	  .attr("dy", "1.5em")
+	  .attr("transform", function(d, i){return "translate(0, -10)"})
+	  .attr("x", function(d, i){return cfg.w/2*(1-cfg.factorLegend*Math.sin(i*cfg.radians/total))-60*Math.sin(i*cfg.radians/total);})
+	  .attr("y", function(d, i){return cfg.h/2*(1-Math.cos(i*cfg.radians/total))-20*Math.cos(i*cfg.radians/total);});
+      
+      
+      d.forEach(function(y, x){
+	  dataValues = [];
+	  g.selectAll(".nodes")
+	      .data(y, function(j, i){
+		  dataValues.push([
+		      cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total)), 
+		      cfg.h/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.cos(i*cfg.radians/total))
+		  ]);
+	      });
+	  dataValues.push(dataValues[0]);
+	  g.selectAll(".area")
+	      .data([dataValues])
+	      .enter()
+	      .append("polygon")
+	      .attr("class", cfg.radarClass+series)
+	      .style("stroke-width", "2px")
+	      .style("stroke", cfg.color(series))
+	      .attr("points",function(d) {
+                  return d.map(function(d) {
+		      return [d[0], d[1]].join(",");
+		  }).join(" ");
+	      })
+	      .style("fill", function(j, i){return cfg.color(series)})
+	      .style("fill-opacity", 0)
+	  series++;
+      });
+      series=0;
+      
+      
+      d.forEach(function(y, x){
+	  g.selectAll(".nodes")
+	      .data(y).enter()
+	      .append("svg:circle")
+	      .attr("class", cfg.radarClass+series)
+	      .attr('r', cfg.radius)
+	      .attr("alt", function(j){return Math.max(j.value, 0)})
+	      .attr("cx", function(j, i){
+		  dataValues.push([
+		      cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total)), 
+		      cfg.h/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.cos(i*cfg.radians/total))
+		  ]);
+		  return cfg.w/2*(1-(Math.max(j.value, 0)/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total));
+	      })
+	      .attr("cy", function(j, i){
+		  return cfg.h/2*(1-(Math.max(j.value, 0)/cfg.maxValueD[j.axis])*cfg.factor*Math.cos(i*cfg.radians/total));
+	      })
+	      .attr("data-id", function(j){return j.axis})
+	      .style("fill", cfg.color(series)).style("fill-opacity", .2)
+	      .on('mouseover', function (d){
+		  z = "polygon."+d3.select(this).attr("class");
+		  c = "circle."+d3.select(this).attr("class");
+		  d3.selectAll(c).each(function(e, j) {
+		      newX = parseFloat(d3.select(this).attr('cx')) - 10;
+		      newY = parseFloat(d3.select(this).attr('cy')) - 5;
+		      d3.select('text.tooltip-'+j)
+			  .attr('x', newX)
+			  .attr('y', newY)
+			  .text(Format(e.value))
+			  .transition(200)
+			  .style('opacity', 1);
+		  });
+		  default_data_show(z, c);
+	      })
+	      /*.on('mouseout', function(){
+		  *tooltip
+		      .transition(200)
+		      .style('opacity', 0);
+	      })*/
+	      .append("svg:title")
+	      .text(function(j){return Math.max(j.value, 0)});
+	  
+	  series++;
+      });
+      
+      default_data_show = function(z, c) {
+	  g.selectAll("circle")
+	      .transition(200)
+	      .style("fill-opacity", 0.2);
+	  g.selectAll("polygon")
+	      .transition(200)
+	      .style("fill-opacity", 0.0)
+	      .style("stroke-opacity", 0.8);
+          g.selectAll(z)
+	      .transition(200)
+	      .style("fill-opacity", cfg.opacityArea)
+	      .style("stroke-opacity", 0.8);
+	  g.selectAll(c)
+	      .transition(200)
+	      .style("fill-opacity", 0.9);
+      }
+      default_data_show(
+	  polygonClass + cfg.legend.indexOf(cfg.defaultValue), 
+	  circleClass + cfg.legend.indexOf(cfg.defaultValue));
+
+      for(var i=0; i<d[0].length;i++) {
+	  g.append('text')
+	      .attr('class', 'tooltip-' + i)
+	      .style('opacity', 0)
+	      .style('font-family', 'sans-serif')
+	      .style('font-size', '13px');
+      }
+      
+     //legend
+      var svg = d3.select('#text-chart')
+	  .selectAll('svg')
+	  .append('svg')
+	  .attr("width", cfg.w+300)
+	  .attr("height", cfg.h);
+      
+      //Create the title for the legend
+      var text = svg.append("text")
+	  .attr("class", "title")
+	  .attr('transform', 'translate(90,0)') 
+	  .attr("x", cfg.w - 10)
+	  .attr("y", 20)
+	  .attr("font-size", "12px")
+	  .attr("fill", "#404040")
+	  .text(cfg.legendText);
+      
+      //Initiate Legend	
+      var legend = svg.append("g")
+	  .attr("class", "legend")
+	  .attr("height", 100)
+	  .attr("width", 200)
+	  .attr('transform', 'translate(90,20)');
+
+      //Create colour squares
+      legend.selectAll('rect')
+	  .data(cfg.legend)
+	  .enter()
+	  .append("rect")
+	  .attr("x", cfg.w - 10)
+	  .attr("y", function(d, i){ return i * 20 + 5;})
+	  .attr("width", 10)
+	  .attr("height", 20)
+	  .style("fill", function(d, i){ return cfg.color(i);})
+          .on('click', function(d, i){
+	      default_data_show(polygonClass + i, circleClass + i)
+              d3.selectAll(circleClass+i).each(function(e, j) {
+		  newX = parseFloat(d3.select(this).attr('cx')) - 10;
+		  newY = parseFloat(d3.select(this).attr('cy')) - 5;
+		  d3.select('text.tooltip-'+j)
+		      .attr('x', newX)
+		      .attr('y', newY)
+		      .text(Format(e.value))
+		      .transition(200)
+		      .style('opacity', 1);
+              });
+	  });
+      
+      //Create text next to squares
+      legend.selectAll('text')
+	  .data(cfg.legend)
+	  .enter()
+	  .append("text")
+	  .attr("x", cfg.w + 5)
+	  .attr("y", function(d, i){ return i * 20 + 19;})
+	  .attr("font-size", "11px")
+	  .attr("fill", "#737373")
+	  .text(function(d) { return d; });
+  }
+};
