@@ -17,9 +17,13 @@ var RadarChart = {
       ExtraWidthY: 100,
       color: d3.scale.category10(),
       legend: [],
-      zoomOut: 1
+      defaultValue: null,
+      zoomOut: 1,
+      radarClass: "radar-chart-serie-"
   };
-	
+      var polygonClass = "polygon." + cfg.radarClass;
+      var circleClass = "circle." + cfg.radarClass;
+
       if('undefined' !== typeof options){
 	  for(var i in options){
 	      if('undefined' !== typeof options[i]){
@@ -69,8 +73,6 @@ var RadarChart = {
 	  .attr("transform", 
 		"translate(" + cfg.TranslateX + "," + cfg.TranslateY + ")");
       
-      var tooltip;
-      
       //Circular segments
       for(var j=0; j<cfg.levels-1; j++){
 	  var levelFactor = cfg.factor*radius*((j+1)/cfg.levels);
@@ -84,7 +86,7 @@ var RadarChart = {
 	      .attr("y2", function(d, i){return levelFactor*(1-cfg.factor*Math.cos((i+1)*cfg.radians/total));})
 	      .attr("class", "line")
 	      .style("stroke", "grey")
-	      .style("stroke-opacity", "0.75")
+	      .style("stroke-opacity", "0.5")
 	      .style("stroke-width", "0.3px")
 	      .attr("transform", "translate(" + (cfg.w/2-levelFactor) + ", " + (cfg.h/2-levelFactor) + ")");
       }
@@ -151,7 +153,7 @@ var RadarChart = {
 	      .data([dataValues])
 	      .enter()
 	      .append("polygon")
-	      .attr("class", "radar-chart-serie"+series)
+	      .attr("class", cfg.radarClass+series)
 	      .style("stroke-width", "2px")
 	      .style("stroke", cfg.color(series))
 	      .attr("points",function(d) {
@@ -160,33 +162,7 @@ var RadarChart = {
 		  }).join(" ");
 	      })
 	      .style("fill", function(j, i){return cfg.color(series)})
-	      .style("fill-opacity", cfg.opacityArea)
-	      /*.on('mouseover', function (d){
-		  z = "polygon."+d3.select(this).attr("class");
-		  c = "circle."+d3.select(this).attr("class");;
-		  g.selectAll("circle")
-		      .transition(200)
-		      .style("fill-opacity", 0.2);
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", 0.0)
-		      .style("stroke-opacity", 0.3);
-		  g.selectAll(z)
-		      .transition(200)
-		      .style("fill-opacity", 0.7);
-		  g.selectAll(c)
-		      .transition(200)
-		      .style("fill-opacity", 0.9);
-	      })
-	      .on('mouseout', function(){
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", cfg.opacityArea)
-		      .style("stroke-opacity", 1);
-		  g.selectAll("circle")
-		      .transition(200)
-		      .style("fill-opacity", 0.9);
-	      });*/
+	      .style("fill-opacity", 0)
 	  series++;
       });
       series=0;
@@ -196,7 +172,7 @@ var RadarChart = {
 	  g.selectAll(".nodes")
 	      .data(y).enter()
 	      .append("svg:circle")
-	      .attr("class", "radar-chart-serie"+series)
+	      .attr("class", cfg.radarClass+series)
 	      .attr('r', cfg.radius)
 	      .attr("alt", function(j){return Math.max(j.value, 0)})
 	      .attr("cx", function(j, i){
@@ -210,58 +186,61 @@ var RadarChart = {
 		  return cfg.h/2*(1-(Math.max(j.value, 0)/cfg.maxValueD[j.axis])*cfg.factor*Math.cos(i*cfg.radians/total));
 	      })
 	      .attr("data-id", function(j){return j.axis})
-	      .style("fill", cfg.color(series)).style("fill-opacity", .9)
+	      .style("fill", cfg.color(series)).style("fill-opacity", .2)
 	      .on('mouseover', function (d){
-		  newX =  parseFloat(d3.select(this).attr('cx')) - 10;
-		  newY =  parseFloat(d3.select(this).attr('cy')) - 5;
-		  
-		  tooltip
-		      .attr('x', newX)
-		      .attr('y', newY)
-		      .text(Format(d.value))
-		      .transition(200)
-		      .style('opacity', 1);
-		  
 		  z = "polygon."+d3.select(this).attr("class");
 		  c = "circle."+d3.select(this).attr("class");
-		  g.selectAll("circle")
-		      .transition(200)
-		      .style("fill-opacity", 0.2);
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", 0.0)
-		      .style("stroke-opacity", 0.3);
-		  g.selectAll(z)
-		      .transition(200)
-		      .style("fill-opacity", 0.7);
-		  g.selectAll(c)
-		      .transition(200)
-		      .style("fill-opacity", 0.9);
+		  d3.selectAll(c).each(function(e, j) {
+		      newX = parseFloat(d3.select(this).attr('cx')) - 10;
+		      newY = parseFloat(d3.select(this).attr('cy')) - 5;
+		      d3.select('text.tooltip-'+j)
+			  .attr('x', newX)
+			  .attr('y', newY)
+			  .text(Format(e.value))
+			  .transition(200)
+			  .style('opacity', 1);
+		  });
+		  default_data_show(z, c);
 	      })
-	      .on('mouseout', function(){
-		  tooltip
+	      /*.on('mouseout', function(){
+		  *tooltip
 		      .transition(200)
 		      .style('opacity', 0);
-		  g.selectAll("polygon")
-		      .transition(200)
-		      .style("fill-opacity", cfg.opacityArea)
-		      .style("stroke-opacity", 1);
-		  g.selectAll("circle")
-		      .transition(200)
-		      .style("fill-opacity", 0.9);
-	      })
+	      })*/
 	      .append("svg:title")
 	      .text(function(j){return Math.max(j.value, 0)});
 	  
 	  series++;
       });
       
-      //Tooltip
-      tooltip = g.append('text')
-	  .style('opacity', 0)
-	  .style('font-family', 'sans-serif')
-	  .style('font-size', '13px');
+      default_data_show = function(z, c) {
+	  g.selectAll("circle")
+	      .transition(200)
+	      .style("fill-opacity", 0.2);
+	  g.selectAll("polygon")
+	      .transition(200)
+	      .style("fill-opacity", 0.0)
+	      .style("stroke-opacity", 0.8);
+          g.selectAll(z)
+	      .transition(200)
+	      .style("fill-opacity", cfg.opacityArea)
+	      .style("stroke-opacity", 0.8);
+	  g.selectAll(c)
+	      .transition(200)
+	      .style("fill-opacity", 0.9);
+      }
+      default_data_show(
+	  polygonClass + cfg.legend.indexOf(cfg.defaultValue), 
+	  circleClass + cfg.legend.indexOf(cfg.defaultValue));
 
+      for(var i=0; i<d[0].length;i++) {
+	  g.append('text')
+	      .attr('class', 'tooltip-' + i)
+	      .style('opacity', 0)
+	      .style('font-family', 'sans-serif')
+	      .style('font-size', '13px');
+      }
+      
      //legend
       var svg = d3.select('#text-chart')
 	  .selectAll('svg')
@@ -297,21 +276,17 @@ var RadarChart = {
 	  .attr("height", 20)
 	  .style("fill", function(d, i){ return cfg.color(i);})
           .on('click', function(d, i){
-	      z = "polygon.radar-chart-serie" + i;
-	      c = "circle.radar-chart-serie" + i;
-	      g.selectAll("circle")
-		  .transition(200)
-		  .style("fill-opacity", 0.2);
-	      g.selectAll("polygon")
-		  .transition(200)
-		  .style("fill-opacity", 0.0)
-		  .style("stroke-opacity", 0.3);
-	      g.selectAll(z)
-		  .transition(200)
-		  .style("fill-opacity", 0.7);
-	      g.selectAll(c)
-		  .transition(200)
-		  .style("fill-opacity", 0.9);
+	      default_data_show(polygonClass + i, circleClass + i)
+              d3.selectAll(circleClass+i).each(function(e, j) {
+		  newX = parseFloat(d3.select(this).attr('cx')) - 10;
+		  newY = parseFloat(d3.select(this).attr('cy')) - 5;
+		  d3.select('text.tooltip-'+j)
+		      .attr('x', newX)
+		      .attr('y', newY)
+		      .text(Format(e.value))
+		      .transition(200)
+		      .style('opacity', 1);
+              });
 	  });
       
       //Create text next to squares
