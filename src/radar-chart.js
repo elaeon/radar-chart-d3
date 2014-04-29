@@ -63,6 +63,7 @@ var RadarChart = {
       var total = allAxis.length;
       var radius = cfg.factor*Math.min(cfg.w/2, cfg.h/2);
       var Format = d3.format('');
+      var FormatLevelValue = d3.format('.1f')
       d3.select(id).select("svg").remove();
       
       var g = d3.select(id)
@@ -106,7 +107,8 @@ var RadarChart = {
 	      .enter()
 	      .append("text")
 	      .attr("class", "legend")
-	      .text(function(d) {return Format(((j+1)*cfg.maxValueD[d]/cfg.levels))})
+	      .text(function(d) {
+		  return FormatLevelValue(((j+1)*cfg.maxValueD[d]/cfg.levels))})
 	      .style("font-family", "sans-serif")
 	      .style("font-size", "11px")
 	      .attr("text-anchor", "middle")
