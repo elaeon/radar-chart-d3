@@ -10,6 +10,7 @@ Example
 
 ```html
 <html>
+<head>
 <style>
 circle:hover {
     cursor: pointer;
@@ -18,9 +19,13 @@ circle:hover {
     cursor: pointer;
 }
 </style>
+</head>
+
+<body>
 <div id="text-chart">
 	<div id="chart1"></div>
 </div>
+</body>
 <html>
 ```
 
