@@ -10,6 +10,14 @@ Example
 
 ```html
 <html>
+<style>
+circle:hover {
+    cursor: pointer;
+}
+.legend rect:hover {
+    cursor: pointer;
+}
+</style>
 <div id="text-chart">
 	<div id="chart1"></div>
 </div>
