@@ -280,7 +280,7 @@ var RadarChart = {
 		  d3.select('text.tooltip-'+j)
 		      .attr('x', newX)
 		      .attr('y', newY)
-		      .text(Format(e.value))
+		      //.text(Format(e.value))
 		      .transition(200)
 		      .style('opacity', 1);
               });
