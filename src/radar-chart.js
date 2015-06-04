@@ -176,7 +176,7 @@ var RadarChart = {
 	      .append("svg:circle")
 	      .attr("class", cfg.radarClass+series)
 	      .attr('r', cfg.radius)
-	      .attr("alt", function(j){return Math.max(j.value, 0) + j.axis})
+	      .attr("alt", function(j){console.log(j) return Math.max(j.value, 0) + j.axis})
 	      .attr("cx", function(j, i){
 		  dataValues.push([
 		      cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total)), 
