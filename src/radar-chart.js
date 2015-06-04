@@ -176,7 +176,7 @@ var RadarChart = {
 	      .append("svg:circle")
 	      .attr("class", cfg.radarClass+series)
 	      .attr('r', cfg.radius)
-	      .attr("alt", function(j){console.log(j); return Math.max(j.value, 0) + j.axis})
+	      .attr("alt", function(j){return Math.max(j.value, 0);})
 	      .attr("cx", function(j, i){
 		  dataValues.push([
 		      cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total)), 
@@ -205,7 +205,7 @@ var RadarChart = {
 		  default_data_show(z, c);
 	      })
 	      .append("svg:title")
-	      .text(function(j){console.log(j); return Math.max(j.value, 0)});
+	      .text(function(j){return j.axis + ": " + Math.max(j.value, 0)});
 	  
 	  series++;
       });
