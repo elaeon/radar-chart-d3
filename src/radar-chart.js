@@ -176,7 +176,7 @@ var RadarChart = {
 	      .append("svg:circle")
 	      .attr("class", cfg.radarClass+series)
 	      .attr('r', cfg.radius)
-	      .attr("alt", function(j){return Math.max(j.value, 0)})
+	      .attr("alt", function(j){return Math.max(j.value, 0) + d})
 	      .attr("cx", function(j, i){
 		  dataValues.push([
 		      cfg.w/2*(1-(parseFloat(Math.max(j.value, 0))/cfg.maxValueD[j.axis])*cfg.factor*Math.sin(i*cfg.radians/total)), 
@@ -198,17 +198,12 @@ var RadarChart = {
 		      d3.select('text.tooltip-'+j)
 			  .attr('x', newX)
 			  .attr('y', newY)
-			  .text(Format(e.value))
+			  //.text(Format(e.value))
 			  .transition(200)
 			  .style('opacity', 1);
 		  });
 		  default_data_show(z, c);
 	      })
-	      /*.on('mouseout', function(){
-		  *tooltip
-		      .transition(200)
-		      .style('opacity', 0);
-	      })*/
 	      .append("svg:title")
 	      .text(function(j){return Math.max(j.value, 0)});
 	  
